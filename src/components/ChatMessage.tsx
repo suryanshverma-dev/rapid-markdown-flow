@@ -28,9 +28,7 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({ message }) => {
 
   const renderMarkdown = (content: string) => {
     return (
-      <ReactMarkdown
-        remarkPlugins={[remarkGfm]}
-        className="prose prose-sm max-w-none dark:prose-invert
+      <div className="prose prose-sm max-w-none dark:prose-invert
                    prose-headings:text-gray-900 dark:prose-headings:text-white
                    prose-p:text-gray-700 dark:prose-p:text-gray-300
                    prose-strong:text-gray-900 dark:prose-strong:text-white
@@ -39,63 +37,67 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({ message }) => {
                    prose-code:px-1 prose-code:py-0.5 prose-code:rounded
                    prose-blockquote:border-blue-500 prose-blockquote:bg-blue-50 dark:prose-blockquote:bg-blue-900/20
                    prose-ul:text-gray-700 dark:prose-ul:text-gray-300
-                   prose-ol:text-gray-700 dark:prose-ol:text-gray-300"
-        components={{
-          code({ node, inline, className, children, ...props }) {
-            const match = /language-(\w+)/.exec(className || '');
-            const language = match ? match[1] : '';
-            
-            if (!inline && match) {
-              return (
-                <div className="relative group">
-                  <div className="flex items-center justify-between bg-gray-800 dark:bg-gray-900 px-4 py-2 rounded-t-lg">
-                    <span className="text-xs text-gray-400 font-medium uppercase">
-                      {language}
-                    </span>
+                   prose-ol:text-gray-700 dark:prose-ol:text-gray-300">
+        <ReactMarkdown
+          remarkPlugins={[remarkGfm]}
+          components={{
+            code(props) {
+              const { children, className, ...rest } = props;
+              const match = /language-(\w+)/.exec(className || '');
+              const language = match ? match[1] : '';
+              
+              if (className && match) {
+                return (
+                  <div className="relative group">
+                    <div className="flex items-center justify-between bg-gray-800 dark:bg-gray-900 px-4 py-2 rounded-t-lg">
+                      <span className="text-xs text-gray-400 font-medium uppercase">
+                        {language}
+                      </span>
+                    </div>
+                    <SyntaxHighlighter
+                      style={isDarkMode ? oneDark as any : oneLight as any}
+                      language={language}
+                      PreTag="div"
+                      className="!mt-0 !rounded-t-none"
+                      {...rest}
+                    >
+                      {String(children).replace(/\n$/, '')}
+                    </SyntaxHighlighter>
                   </div>
-                  <SyntaxHighlighter
-                    style={isDarkMode ? oneDark : oneLight}
-                    language={language}
-                    PreTag="div"
-                    className="!mt-0 !rounded-t-none"
-                    {...props}
-                  >
-                    {String(children).replace(/\n$/, '')}
-                  </SyntaxHighlighter>
-                </div>
+                );
+              }
+              
+              return (
+                <code className={className} {...rest}>
+                  {children}
+                </code>
               );
-            }
-            
-            return (
-              <code className={className} {...props}>
+            },
+            h1: ({ children }) => (
+              <h1 className="text-2xl font-bold mb-4 text-gray-900 dark:text-white">
                 {children}
-              </code>
-            );
-          },
-          h1: ({ children }) => (
-            <h1 className="text-2xl font-bold mb-4 text-gray-900 dark:text-white">
-              {children}
-            </h1>
-          ),
-          h2: ({ children }) => (
-            <h2 className="text-xl font-semibold mb-3 text-gray-900 dark:text-white">
-              {children}
-            </h2>
-          ),
-          h3: ({ children }) => (
-            <h3 className="text-lg font-medium mb-2 text-gray-900 dark:text-white">
-              {children}
-            </h3>
-          ),
-          blockquote: ({ children }) => (
-            <blockquote className="border-l-4 border-blue-500 pl-4 py-2 bg-blue-50 dark:bg-blue-900/20 rounded-r-lg">
-              {children}
-            </blockquote>
-          ),
-        }}
-      >
-        {content}
-      </ReactMarkdown>
+              </h1>
+            ),
+            h2: ({ children }) => (
+              <h2 className="text-xl font-semibold mb-3 text-gray-900 dark:text-white">
+                {children}
+              </h2>
+            ),
+            h3: ({ children }) => (
+              <h3 className="text-lg font-medium mb-2 text-gray-900 dark:text-white">
+                {children}
+              </h3>
+            ),
+            blockquote: ({ children }) => (
+              <blockquote className="border-l-4 border-blue-500 pl-4 py-2 bg-blue-50 dark:bg-blue-900/20 rounded-r-lg">
+                {children}
+              </blockquote>
+            ),
+          }}
+        >
+          {content}
+        </ReactMarkdown>
+      </div>
     );
   };
 
