@@ -1,8 +1,9 @@
-
 import React, { useState, useRef, useEffect } from 'react';
-import { Send } from 'lucide-react';
+import { Send, LogOut } from 'lucide-react';
 import { ChatMessage } from './ChatMessage';
 import { TypingIndicator } from './TypingIndicator';
+import { useAuth } from '../contexts/AuthContext';
+import { Button } from './ui/button';
 
 interface Message {
   id: string;
@@ -17,6 +18,7 @@ export const ChatInterface: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
+  const { user, logout } = useAuth();
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -67,7 +69,7 @@ export const ChatInterface: React.FC = () => {
       setMessages(prev => [...prev, aiMessage]);
     } catch (error) {
       // For demo purposes, simulate an AI response
-      const demoResponse = `# Hello! 👋
+      const demoResponse = `# Hello ${user?.name || 'there'}! 👋
 
 Thank you for your message: "${inputValue}"
 
@@ -86,7 +88,7 @@ function greetUser(name) {
   return \`Welcome to the chat app!\`;
 }
 
-greetUser("Developer");
+greetUser("${user?.name || 'Developer'}");
 \`\`\`
 
 ## What's Next?
@@ -132,13 +134,33 @@ Ready to chat more? 🚀`;
     textarea.style.height = Math.min(textarea.scrollHeight, 120) + 'px';
   };
 
+  const handleLogout = () => {
+    logout();
+  };
+
   return (
     <div className="flex flex-col h-screen bg-gray-50 dark:bg-gray-900">
       {/* Header */}
       <header className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-6 py-4">
-        <h1 className="text-xl font-semibold text-gray-900 dark:text-white">
-          AI Chat Assistant
-        </h1>
+        <div className="flex items-center justify-between">
+          <h1 className="text-xl font-semibold text-gray-900 dark:text-white">
+            AI Chat Assistant
+          </h1>
+          <div className="flex items-center space-x-4">
+            <span className="text-sm text-gray-600 dark:text-gray-400">
+              Welcome, {user?.name}
+            </span>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleLogout}
+              className="flex items-center space-x-2"
+            >
+              <LogOut className="h-4 w-4" />
+              <span>Logout</span>
+            </Button>
+          </div>
+        </div>
       </header>
 
       {/* Messages Container */}
@@ -147,7 +169,7 @@ Ready to chat more? 🚀`;
           {messages.length === 0 && (
             <div className="text-center py-12">
               <div className="text-gray-500 dark:text-gray-400 text-lg mb-4">
-                👋 Welcome to AI Chat!
+                👋 Welcome to AI Chat, {user?.name}!
               </div>
               <div className="text-gray-400 dark:text-gray-500">
                 Send a message to get started
